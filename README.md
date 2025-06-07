@@ -14,70 +14,62 @@ A simple web application for collecting, voting on, and managing ideas with note
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 with React and TypeScript
+- **Frontend**: Next.js 15 with React 19 and TypeScript
 - **Backend**: Next.js API Routes
 - **Storage**: JSON files with persistent Docker volumes
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **Testing**: Jest with React Testing Library
 - **Deployment**: Docker with docker-compose
 
-## Getting Started
+## Quick Start
 
-### Development
+### Option 1: Using npm scripts (Recommended)
 
-1. Install dependencies:
 \`\`\`bash
+# Build and run production
+npm run docker:build
+npm run docker:prod
+
+# Or run development mode
+npm run docker:dev
+
+# View logs
+npm run docker:logs
+
+# Stop containers
+npm run docker:stop
+\`\`\`
+
+### Option 2: Manual Docker commands
+
+\`\`\`bash
+# Development
+docker-compose --profile dev up --build
+
+# Production
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f
+\`\`\`
+
+### Option 3: Local development
+
+\`\`\`bash
+# Install dependencies
 npm install
-\`\`\`
 
-2. Run the development server:
-\`\`\`bash
+# Run development server
 npm run dev
-\`\`\`
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Docker Deployment
-
-1. Build and run with docker-compose:
-\`\`\`bash
-docker-compose up -d
-\`\`\`
-
-2. The application will be available at [http://localhost:3000](http://localhost:3000)
-
-3. Data will be persisted in the `idea-data` Docker volume.
-
-### Manual Docker Build
-
-\`\`\`bash
-# Build the image
-docker build -t idea-collector .
-
-# Run with persistent volume
-docker run -d \
-  -p 3000:3000 \
-  -v idea-data:/app/data \
-  --name idea-collector \
-  idea-collector
-\`\`\`
-
-## Testing
-
-Run all tests:
-\`\`\`bash
+# Run tests
 npm test
 \`\`\`
 
-Run tests in watch mode:
-\`\`\`bash
-npm run test:watch
-\`\`\`
+## Docker Services
 
-Generate coverage report:
-\`\`\`bash
-npm run test:coverage
-\`\`\`
+- **Production**: `idea-collector` - Optimized production build on port 3000
+- **Development**: `idea-collector-dev` - Development mode with hot reload on port 3001
 
 ## API Endpoints
 
@@ -86,6 +78,7 @@ npm run test:coverage
 - `POST /api/ideas/[id]/vote` - Vote on an idea
 - `PUT /api/ideas/[id]/notes` - Update idea notes
 - `POST /api/ideas/[id]/files` - Upload file attachment
+- `GET /api/health` - Health check endpoint
 
 ## Data Storage
 
@@ -94,7 +87,20 @@ The application uses JSON files for data persistence:
 - `data/ideas.json` - Stores all ideas and metadata
 - `data/uploads/` - Stores uploaded file attachments
 
-When deployed with Docker, these files are stored in a persistent volume to ensure data survives container restarts.
+When deployed with Docker, these files are stored in persistent volumes to ensure data survives container restarts.
+
+## Testing
+
+\`\`\`bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+\`\`\`
 
 ## Project Structure
 
@@ -108,11 +114,32 @@ When deployed with Docker, these files are stored in a persistent volume to ensu
 ├── components/ui/          # shadcn/ui components
 ├── hooks/                  # Custom React hooks
 ├── lib/                    # Utility functions
+├── scripts/                # Build and deployment scripts
 ├── data/                   # Persistent data storage
-├── Dockerfile              # Docker configuration
+├── Dockerfile              # Production Docker configuration
+├── Dockerfile.dev          # Development Docker configuration
 ├── docker-compose.yml      # Docker Compose setup
-└── jest.config.js          # Jest configuration
+└── package-lock.json       # Dependency lock file
 \`\`\`
+
+## Troubleshooting
+
+### Build Issues
+
+If you encounter build issues:
+
+1. Make sure you have the latest Docker version
+2. Clear Docker cache: `docker system prune -a`
+3. Regenerate package-lock.json: `rm package-lock.json && npm install`
+4. Try the build script: `npm run docker:build`
+
+### Port Conflicts
+
+If ports 3000 or 3001 are in use:
+
+1. Stop existing containers: `docker-compose down`
+2. Check for running processes: `lsof -i :3000`
+3. Modify ports in `docker-compose.yml` if needed
 
 ## Contributing
 
@@ -120,27 +147,10 @@ When deployed with Docker, these files are stored in a persistent volume to ensu
 2. Create a feature branch
 3. Make your changes
 4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+5. Ensure all tests pass: `npm test`
+6. Test Docker build: `npm run docker:build`
+7. Submit a pull request
 
 ## License
 
 MIT License
-\`\`\`
-
-\`\`\`dockerignore file=".dockerignore"
-node_modules
-.next
-.git
-.gitignore
-README.md
-Dockerfile
-.dockerignore
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.env*.local
-coverage
-__tests__
-jest.config.js
-jest.setup.js
