@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import type { NextRequest } from "next/server"
 import { POST } from "../../app/api/ideas/[id]/vote/route"
 import { promises as fs } from "fs"

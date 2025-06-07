@@ -128,7 +128,7 @@ When deployed with Docker, these files are stored in a persistent volume to ensu
 MIT License
 \`\`\`
 
-```dockerignore file=".dockerignore"
+\`\`\`dockerignore file=".dockerignore"
 node_modules
 .next
 .git

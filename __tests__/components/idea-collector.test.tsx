@@ -9,13 +9,16 @@ jest.mock("../../hooks/use-toast", () => ({
   }),
 }))
 
+// Mock fetch globally
+global.fetch = jest.fn()
+
 describe("IdeaCollector", () => {
   beforeEach(() => {
-    fetch.mockClear()
+    ;(global.fetch as jest.Mock).mockClear()
   })
 
   it("renders the main heading", () => {
-    fetch.mockResolvedValueOnce({
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ ideas: [] }),
     })
@@ -25,7 +28,7 @@ describe("IdeaCollector", () => {
   })
 
   it("displays empty state when no ideas exist", async () => {
-    fetch.mockResolvedValueOnce({
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ ideas: [] }),
     })
@@ -48,9 +51,7 @@ describe("IdeaCollector", () => {
         files: [],
         createdAt: "2023-01-01T00:00:00.000Z",
       },
-    ]
-
-    fetch.mockResolvedValueOnce({
+    ](global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ ideas: mockIdeas }),
     })
@@ -66,22 +67,25 @@ describe("IdeaCollector", () => {
 
   it("creates a new idea when form is submitted", async () => {
     // Mock initial fetch
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ideas: [] }),
-    })
-
-    // Mock create idea
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ idea: { id: "1", title: "New Idea" } }),
-    })
-
-    // Mock refresh fetch
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ideas: [{ id: "1", title: "New Idea", votes: 0 }] }),
-    })
+    ;(global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ideas: [] }),
+      })(
+        // Mock create idea
+        global.fetch as jest.Mock,
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ idea: { id: "1", title: "New Idea" } }),
+      })(
+        // Mock refresh fetch
+        global.fetch as jest.Mock,
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ideas: [{ id: "1", title: "New Idea", votes: 0 }] }),
+      })
 
     render(<IdeaCollector />)
 
@@ -92,7 +96,7 @@ describe("IdeaCollector", () => {
     fireEvent.click(createButton)
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/ideas", {
+      expect(global.fetch).toHaveBeenCalledWith("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "New Idea", description: "" }),
@@ -111,25 +115,28 @@ describe("IdeaCollector", () => {
         files: [],
         createdAt: "2023-01-01T00:00:00.000Z",
       },
-    ]
-
-    // Mock initial fetch
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ideas: mockIdeas }),
-    })
-
-    // Mock vote
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ idea: { ...mockIdeas[0], votes: 6 } }),
-    })
-
-    // Mock refresh fetch
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ideas: [{ ...mockIdeas[0], votes: 6 }] }),
-    })
+    ](
+      // Mock initial fetch
+      global.fetch as jest.Mock,
+    )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ideas: mockIdeas }),
+      })(
+        // Mock vote
+        global.fetch as jest.Mock,
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ idea: { ...mockIdeas[0], votes: 6 } }),
+      })(
+        // Mock refresh fetch
+        global.fetch as jest.Mock,
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ideas: [{ ...mockIdeas[0], votes: 6 }] }),
+      })
 
     render(<IdeaCollector />)
 
@@ -141,7 +148,7 @@ describe("IdeaCollector", () => {
     fireEvent.click(voteButton)
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/ideas/1/vote", {
+      expect(global.fetch).toHaveBeenCalledWith("/api/ideas/1/vote", {
         method: "POST",
       })
     })

@@ -2,7 +2,7 @@
 
 import "@testing-library/jest-dom"
 import { jest } from "@jest/globals"
-import { beforeEach } from "@jest/types"
+import { beforeEach } from "@jest/environment"
 
 // Mock Next.js router
 jest.mock("next/navigation", () => ({
@@ -26,5 +26,7 @@ global.fetch = jest.fn()
 
 // Setup fetch mock reset
 beforeEach(() => {
-  fetch.mockClear()
+  if (global.fetch && global.fetch.mockClear) {
+    global.fetch.mockClear()
+  }
 })
